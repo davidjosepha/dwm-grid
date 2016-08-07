@@ -2161,7 +2161,7 @@ gridfree(Monitor *m, int x, int y)
 
 bool
 gridspace(Monitor *m, int x, int y, int w, int h) {
-    unsigned int i, j;
+    int i, j;
 
     for (i = x; i < x + w; i++)
         for (j = y; j < y + h; j++)
@@ -2195,6 +2195,8 @@ gridmove(const Arg *arg)
     if (gridspace(m, x, y, c->gw, c->gh)) {
         gridsetpos(c, x, y, c->gw, c->gh);
     }
+
+    arrange(m);
 }
 
 void
