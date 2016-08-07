@@ -88,12 +88,12 @@ static Key keys[] = {
 	{ MODKEY,                       XK_period, focusmon,       {.i = +1 } },
 	{ MODKEY|ShiftMask,             XK_comma,  tagmon,         {.i = -1 } },
 	{ MODKEY|ShiftMask,             XK_period, tagmon,         {.i = +1 } },
-    /*
-	{ MODKEY|ShiftMask,             XK_up,     gridmove,       {.v = (int []){  0, -1 } } },
-	{ MODKEY|ShiftMask,             XK_down,   gridmove,       {.v = (int []){  0,  1 } } },
-	{ MODKEY|ShiftMask,             XK_left,   gridmove,       {.v = (int []){ -1,  0 } } },
-	{ MODKEY|ShiftMask,             XK_right,  gridmove,       {.v = (int []){  1,  0 } } },
-    */
+    /* BEGIN grid */
+	{ MODKEY|ShiftMask,             XK_Up,     gridmove,       {.v = (int []){  0, -1 } } },
+	{ MODKEY|ShiftMask,             XK_Down,   gridmove,       {.v = (int []){  0,  1 } } },
+	{ MODKEY|ShiftMask,             XK_Left,   gridmove,       {.v = (int []){ -1,  0 } } },
+	{ MODKEY|ShiftMask,             XK_Right,  gridmove,       {.v = (int []){  1,  0 } } },
+    /* END grid */
 	TAGKEYS(                        XK_1,                      0)
 	TAGKEYS(                        XK_2,                      1)
 	TAGKEYS(                        XK_3,                      2)

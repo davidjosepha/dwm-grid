@@ -244,9 +244,9 @@ static int xerrorstart(Display *dpy, XErrorEvent *ee);
 static void zoom(const Arg *arg);
 /* BEGIN grid */
 static bool gridfree(Monitor *m, int x, int y);
-//static bool gridspace(Monitor *m, int x, int y, int w, int h);
+static bool gridspace(Monitor *m, int x, int y, int w, int h);
 static void gridsetpos(Client *c, int x, int y, int w, int h);
-//static void gridmove(const Arg *arg);
+static void gridmove(const Arg *arg);
 static void gridnew(Client *c, int w, int h);
 static void gridtile(Monitor *m);
 /* END grid */
@@ -2159,7 +2159,6 @@ gridfree(Monitor *m, int x, int y)
 }
 /* END blackbox */
 
-/*
 bool
 gridspace(Monitor *m, int x, int y, int w, int h) {
     unsigned int i, j;
@@ -2170,7 +2169,6 @@ gridspace(Monitor *m, int x, int y, int w, int h) {
 
     return true;
 }
-*/
 
 void
 gridsetpos(Client *c, int x, int y, int w, int h)
@@ -2183,15 +2181,14 @@ gridsetpos(Client *c, int x, int y, int w, int h)
     c->gh = h;
 }
 
-/*
 void
 gridmove(const Arg *arg)
 {
-    unsigned x, y;
+    int x, y;
 
     Monitor *m = selmon;
     Client *c = m->sel;
-    //((int *)arg->v)[0]
+
     x = c->gx + ((int *)arg->v)[0];
     y = c->gy + ((int *)arg->v)[1];
 
@@ -2199,7 +2196,6 @@ gridmove(const Arg *arg)
         gridsetpos(c, x, y, c->gw, c->gh);
     }
 }
-*/
 
 void
 gridnew(Client *c, int w, int h)
