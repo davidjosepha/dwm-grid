@@ -243,10 +243,11 @@ static int xerrordummy(Display *dpy, XErrorEvent *ee);
 static int xerrorstart(Display *dpy, XErrorEvent *ee);
 static void zoom(const Arg *arg);
 /* BEGIN grid */
-static bool gridfree(Monitor *m, int x, int y);
-static bool gridspace(Monitor *m, int x, int y, int w, int h);
+static bool gridfree(Monitor *m, int x, int y, bool self);
+static bool gridspace(Monitor *m, int x, int y, int w, int h, bool mvrs);
 static void gridsetpos(Client *c, int x, int y, int w, int h);
 static void gridmove(const Arg *arg);
+static void gridresize(const Arg *arg);
 static void gridnew(Client *c, int w, int h);
 static void gridtile(Monitor *m);
 /* END grid */
@@ -2147,25 +2148,25 @@ zoom(const Arg *arg)
 /* BEGIN grid */
 /* BEGIN blackbox */
 bool
-gridfree(Monitor *m, int x, int y)
+gridfree(Monitor *m, int x, int y, bool self)
 {
     Client *c;
     if (x < 0 || x >= m->gm || y < 0 || y >= m->gm) return false;
 
     for (c = m->clients; c; c = c->next)
-        if (x >= c->gx && x < c->gx + c->gw && y >= c->gy && y < c->gy + c->gh) return false;
+        if (ISVISIBLE(c) && x >= c->gx && x < c->gx + c->gw && y >= c->gy && y < c->gy + c->gh && (c != m->sel || !self))
+            return false;
 
     return true;
 }
-/* END blackbox */
 
 bool
-gridspace(Monitor *m, int x, int y, int w, int h) {
+gridspace(Monitor *m, int x, int y, int w, int h, bool mvrs) {
     int i, j;
 
     for (i = x; i < x + w; i++)
         for (j = y; j < y + h; j++)
-            if (!gridfree(m, i, j)) return false;
+            if (!gridfree(m, i, j, mvrs)) return false;
 
     return true;
 }
@@ -2173,13 +2174,12 @@ gridspace(Monitor *m, int x, int y, int w, int h) {
 void
 gridsetpos(Client *c, int x, int y, int w, int h)
 {
-    //fprintf(stderr, "Point gridsetpos.0\n");
-
     c->gx = x;
     c->gy = y;
     c->gw = w;
     c->gh = h;
 }
+/* END blackbox */
 
 void
 gridmove(const Arg *arg)
@@ -2192,8 +2192,26 @@ gridmove(const Arg *arg)
     x = c->gx + ((int *)arg->v)[0];
     y = c->gy + ((int *)arg->v)[1];
 
-    if (gridspace(m, x, y, c->gw, c->gh)) {
+    if (gridspace(m, x, y, c->gw, c->gh, true)) {
         gridsetpos(c, x, y, c->gw, c->gh);
+    }
+
+    arrange(m);
+}
+
+void
+gridresize(const Arg *arg)
+{
+    int w, h;
+
+    Monitor *m = selmon;
+    Client *c = m->sel;
+
+    w = c->gw + ((int *)arg->v)[0];
+    h = c->gh + ((int *)arg->v)[1];
+
+    if (gridspace(m, c->gx, c->gy, w, h, true)) {
+        gridsetpos(c, c->gx, c->gy, w, h);
     }
 
     arrange(m);
@@ -2209,8 +2227,8 @@ gridnew(Client *c, int w, int h)
     for (i = 0; i < c->mon->gm; i++) {
         for (j = 0; j < c->mon->gn; j++) {
             //fprintf(stderr, "Point gridnew.1\n");
-            //if (gridspace(c->mon, i, j, w, h)) {
-            if (gridfree(c->mon, i, j)) {
+            if (gridspace(c->mon, i, j, w, h, false)) {
+            //if (gridfree(c->mon, i, j)) {
                 gridsetpos(c, i, j, w, h);
                 return;
             }
@@ -2220,15 +2238,30 @@ gridnew(Client *c, int w, int h)
     gridsetpos(c, 0, 0, w, h);
 }
 
+#define HORZ    5
+#define VERT   13
+
 void
 gridtile(Monitor *m)
 {
     Client *c;
-    //fprintf(stderr, "Point gridtile.0\n");
+
+    /* usable width, usable height, horizontal gap, vertical gap, pane width, pane height */
+    int usw, ush, hgap, vgap, pw, ph;
+
+    usw = (selmon->mw / HORZ / m->gm) * HORZ * m->gm;
+    ush = (selmon->mh / VERT / m->gn) * VERT * m->gn;
+
+    hgap = (selmon->mw - usw) / 2 + 2 * HORZ;
+    vgap = (selmon->mh - ush) / 2 + VERT;
+
+    pw = usw / m->gm;
+    ph = ush / m->gn;
 
     for (c = m->clients; c; c = c->next) {
         //fprintf(stderr, "Point gridtile.1\n");
-        resize(c, c->gx*600+100, c->gy*300+100, c->gw*500, c->gh*250, 0);
+        //resize(c, c->gx*600+100, c->gy*300+100, c->gw*500, c->gh*250, 0);
+        resize(c, c->gx*pw + hgap, c->gy*ph + vgap, c->gw*pw - 4 * HORZ, c->gh*ph - 2 * VERT, 0);
     }
 }
 /* END grid */

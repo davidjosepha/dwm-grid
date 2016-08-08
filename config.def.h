@@ -89,10 +89,14 @@ static Key keys[] = {
 	{ MODKEY|ShiftMask,             XK_comma,  tagmon,         {.i = -1 } },
 	{ MODKEY|ShiftMask,             XK_period, tagmon,         {.i = +1 } },
     /* BEGIN grid */
-	{ MODKEY|ShiftMask,             XK_Up,     gridmove,       {.v = (int []){  0, -1 } } },
-	{ MODKEY|ShiftMask,             XK_Down,   gridmove,       {.v = (int []){  0,  1 } } },
-	{ MODKEY|ShiftMask,             XK_Left,   gridmove,       {.v = (int []){ -1,  0 } } },
-	{ MODKEY|ShiftMask,             XK_Right,  gridmove,       {.v = (int []){  1,  0 } } },
+	{ MODKEY,                       XK_Up,     gridmove,       {.v = (int []){  0, -1 } } },
+	{ MODKEY,                       XK_Down,   gridmove,       {.v = (int []){  0,  1 } } },
+	{ MODKEY,                       XK_Left,   gridmove,       {.v = (int []){ -1,  0 } } },
+	{ MODKEY,                       XK_Right,  gridmove,       {.v = (int []){  1,  0 } } },
+	{ MODKEY|ShiftMask,             XK_Up,     gridresize,     {.v = (int []){  0, -1 } } },
+	{ MODKEY|ShiftMask,             XK_Down,   gridresize,     {.v = (int []){  0,  1 } } },
+	{ MODKEY|ShiftMask,             XK_Left,   gridresize,     {.v = (int []){ -1,  0 } } },
+	{ MODKEY|ShiftMask,             XK_Right,  gridresize,     {.v = (int []){  1,  0 } } },
     /* END grid */
 	TAGKEYS(                        XK_1,                      0)
 	TAGKEYS(                        XK_2,                      1)
