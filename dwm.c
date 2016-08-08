@@ -146,6 +146,9 @@ typedef struct {
 	const char *instance;
 	const char *title;
 	unsigned int tags;
+    /* BEGIN grid */
+    unsigned int x, y, w, h;
+    /* END grid */
 	int isfloating;
 	int monitor;
 } Rule;
@@ -248,7 +251,7 @@ static bool gridspace(Monitor *m, int x, int y, int w, int h, bool mvrs);
 static void gridsetpos(Client *c, int x, int y, int w, int h);
 static void gridmove(const Arg *arg);
 static void gridresize(const Arg *arg);
-static void gridnew(Client *c, int w, int h);
+static void gridnew(Client *c, int x, int y, int w, int h);
 static void gridtile(Monitor *m);
 /* END grid */
 
@@ -315,6 +318,12 @@ applyrules(Client *c)
 		&& (!r->instance || strstr(instance, r->instance)))
 		{
 			c->isfloating = r->isfloating;
+            /* BEGIN grid */
+            c->gx = r->x;
+            c->gy = r->y;
+            c->gw = r->w;
+            c->gh = r->h;
+            /* END grid */
 			c->tags |= r->tags;
 			for (m = mons; m && m->num != r->monitor; m = m->next);
 			if (m)
@@ -1068,7 +1077,11 @@ manage(Window w, XWindowAttributes *wa)
 		c->mon = selmon;
 		applyrules(c);
         /* BEGIN grid */
-        gridnew(c, 1, 1);
+        if (c->gw > 0 && c->gh > 0) {
+            gridnew(c, c->gx, c->gy, c->gw, c->gh);
+        } else {
+            gridnew(c, 0, 0, 1, 1);
+        }
         /* END grid */
 	}
 	/* geometry */
@@ -2218,14 +2231,14 @@ gridresize(const Arg *arg)
 }
 
 void
-gridnew(Client *c, int w, int h)
+gridnew(Client *c, int x, int y, int w, int h)
 {
     unsigned int i, j;
 
     //fprintf(stderr, "Point gridnew.0\n");
 
-    for (i = 0; i < c->mon->gm; i++) {
-        for (j = 0; j < c->mon->gn; j++) {
+    for (i = x; i < c->mon->gm; i++) {
+        for (j = y; j < c->mon->gn; j++) {
             //fprintf(stderr, "Point gridnew.1\n");
             if (gridspace(c->mon, i, j, w, h, false)) {
             //if (gridfree(c->mon, i, j)) {
@@ -2247,21 +2260,25 @@ gridtile(Monitor *m)
     Client *c;
 
     /* usable width, usable height, horizontal gap, vertical gap, pane width, pane height */
-    int usw, ush, hgap, vgap, pw, ph;
+    int usw, ush, lgap, tgap, hgap, vgap, pw, ph;
 
     usw = (selmon->mw / HORZ / m->gm) * HORZ * m->gm;
     ush = (selmon->mh / VERT / m->gn) * VERT * m->gn;
 
-    hgap = (selmon->mw - usw) / 2 + 2 * HORZ;
-    vgap = (selmon->mh - ush) / 2 + VERT;
+    hgap = 4 * HORZ;
+    vgap = 1 * VERT;
+
+    lgap = (selmon->mw - usw + hgap) / 2;
+    tgap = (selmon->mh - ush + vgap) / 2;
 
     pw = usw / m->gm;
     ph = ush / m->gn;
 
-    for (c = m->clients; c; c = c->next) {
+    //for (c = m->clients; c; c = c->next) {
+	for (c = nexttiled(m->clients); c; c = nexttiled(c->next)) {
         //fprintf(stderr, "Point gridtile.1\n");
         //resize(c, c->gx*600+100, c->gy*300+100, c->gw*500, c->gh*250, 0);
-        resize(c, c->gx*pw + hgap, c->gy*ph + vgap, c->gw*pw - 4 * HORZ, c->gh*ph - 2 * VERT, 0);
+        resize(c, c->gx*pw + lgap, c->gy*ph + tgap, c->gw*pw - hgap, c->gh*ph - vgap, 0);
     }
 }
 /* END grid */
